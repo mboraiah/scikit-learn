@@ -335,7 +335,7 @@ class HashingVectorizer(BaseEstimator, VectorizerMixin):
 
     token_pattern: string
         Regular expression denoting what constitutes a "token", only used
-        if `tokenize == 'word'`. The default regexp select tokens of 2
+        if `analyzer == 'word'`. The default regexp select tokens of 2
         or more letters characters (punctuation is completely ignored
         and always treated as a token separator).
 
@@ -682,15 +682,14 @@ class CountVectorizer(BaseEstimator, VectorizerMixin):
 
         # Calculate a mask based on document frequencies
         dfs = _document_frequency(cscmatrix)
+        tfs = np.asarray(cscmatrix.sum(axis=0)).ravel()
         mask = np.ones(len(dfs), dtype=bool)
         if high is not None:
             mask &= dfs <= high
         if low is not None:
             mask &= dfs >= low
         if limit is not None and mask.sum() > limit:
-            # backward compatibility requires us to keep lower indices in ties!
-            # (and hence to reverse the sort by negating dfs)
-            mask_inds = (-dfs[mask]).argsort()[:limit]
+            mask_inds = (-tfs[mask]).argsort()[:limit]
             new_mask = np.zeros(len(dfs), dtype=bool)
             new_mask[np.where(mask)[0][mask_inds]] = True
             mask = new_mask
@@ -881,7 +880,7 @@ def _make_int_array():
 class TfidfTransformer(BaseEstimator, TransformerMixin):
     """Transform a count matrix to a normalized tf or tf-idf representation
 
-    Tf means term-frequency while tf–idf means term-frequency times inverse
+    Tf means term-frequency while tf-idf means term-frequency times inverse
     document-frequency. This is a common term weighting scheme in information
     retrieval, that has also found good use in document classification.
 
@@ -1077,7 +1076,7 @@ class TfidfVectorizer(CountVectorizer):
 
     token_pattern : string
         Regular expression denoting what constitutes a "token", only used
-        if `tokenize == 'word'`. The default regexp select tokens of 2
+        if `analyzer == 'word'`. The default regexp select tokens of 2
         or more letters characters (punctuation is completely ignored
         and always treated as a token separator).
 
